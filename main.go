@@ -1,4 +1,4 @@
-package httpfiletransfer
+package main
 
 import (
 	"log"
