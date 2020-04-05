@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 	"os"
@@ -44,8 +45,15 @@ func setupRouter() *gin.Engine {
 }
 
 func main() {
+	var ip string
+	flag.StringVar(&ip, "listen", "0.0.0.0:8080", "Ip and Port to listening on.")
+	flag.Parse()
 	gin.SetMode(gin.ReleaseMode)
 	r := setupRouter()
-	log.Print("Listening on :8080")
-	r.Run(":8080")
+	log.Printf("Listening on %s", ip)
+	err := r.Run(ip)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
