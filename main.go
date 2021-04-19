@@ -15,14 +15,22 @@ import (
 
 var uploadDir = "uploads"
 
-func saveFile(c *gin.Context, filePath string, content []byte) {
+func saveFile(c *gin.Context, filePath string, content []byte, append bool) {
 	baseDir := filepath.Join(uploadDir, c.ClientIP())
 	finalPath := filepath.Join(baseDir, filepath.Clean(filePath))
 	if strings.HasPrefix(filepath.Clean(finalPath), baseDir) {
 		if _, err := os.Stat(filepath.Dir(finalPath)); os.IsNotExist(err) {
 			os.MkdirAll(filepath.Dir(finalPath), 0700)
 		}
-		file, err := os.Create(finalPath)
+		var file *os.File
+		var err error
+
+		if append {
+			file, err = os.OpenFile(finalPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		} else {
+			file, err = os.Create(finalPath)
+		}
+
 		if err != nil {
 			c.String(http.StatusForbidden, "")
 			return
@@ -46,8 +54,10 @@ func setupRouter(static bool, getUpload bool) *gin.Engine {
 			filePath := c.Param("filepath")
 			if c.Query("c") != "" {
 				content, _ := base64.StdEncoding.DecodeString(c.Query("c"))
-				saveFile(c, filePath, content)
-
+				saveFile(c, filePath, content, false)
+			} else if c.Query("ca") != "" {
+				content, _ := base64.StdEncoding.DecodeString(c.Query("ca"))
+				saveFile(c, filePath, content, true)
 			} else {
 				c.String(http.StatusOK, "OK")
 			}
@@ -56,7 +66,12 @@ func setupRouter(static bool, getUpload bool) *gin.Engine {
 	r.PUT("/*filepath", func(c *gin.Context) {
 		filePath := c.Param("filepath")
 		data, _ := c.GetRawData()
-		saveFile(c, filePath, data)
+		saveFile(c, filePath, data, false)
+	})
+	r.OPTIONS("/*filepath", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE")
+		c.String(http.StatusOK, "")
 	})
 
 	if static {
