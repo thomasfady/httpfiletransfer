@@ -8,7 +8,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -52,6 +54,10 @@ func setupRouter(static bool, getUpload bool) *gin.Engine {
 	if getUpload {
 		r.GET("/*filepath", func(c *gin.Context) {
 			filePath := c.Param("filepath")
+			if filePath == "/sleep" {
+				i, _ := strconv.Atoi(c.DefaultQuery("time", "1"))
+				time.Sleep(time.Duration(i) * time.Second)
+			}
 			if c.Query("c") != "" {
 				content, _ := base64.StdEncoding.DecodeString(c.Query("c"))
 				saveFile(c, filePath, content, false)
