@@ -10,22 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func adminListIps(c *gin.Context) {
-	files, err := ioutil.ReadDir(uploadDir)
-	var ips []string
-	if err == nil && len(files) != 0 {
-		for _, f := range files {
-			if f.IsDir() {
-				ips = append(ips, f.Name())
-			}
-		}
-	}
-	renderHtmlTemplate(html, gin.H{
-		"ips": ips,
-	}, c)
-
-}
-
 func adminListFiles(c *gin.Context) {
 	baseDir := c.Query("base")
 	if baseDir == "" {
@@ -74,24 +58,6 @@ func adminListFiles(c *gin.Context) {
 		"baseDir":    baseDir,
 	}, c)
 }
-
-var html string = `
-<html>
-<head>
-  <title>HttpFileTransfer</title>
-  <script src="/assets/app.js"></script>
-</head>
-<body>
-  <h1>IPs</h1>
-  <h2><small>Show files in : <a href="/admin/list_files?base=static"> static<a/></small> - <a href="/admin/list_files?base=tpl"> templates<a/></small> - <a href="/admin/list_files"> uploads<a/></small></h2>
-  <ul>
-  {{ range $element := .ips }}
-	<li><a href="/admin/list_files/{{$element}}">{{$element}}</a></li>
-	{{end}}
-</ul>
-</body>
-</html>
-`
 
 var list_files_html string = `
 <html>
