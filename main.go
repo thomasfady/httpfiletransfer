@@ -39,7 +39,7 @@ func setupRouter(nostatic bool) *gin.Engine {
 
 func setupAdminRouter(authorized *gin.RouterGroup) {
 
-	authorized.GET("list_ips", adminListIps)
+	authorized.GET("/", adminListFiles)
 	authorized.GET("/list_files/*filepath", adminListFiles)
 }
 
